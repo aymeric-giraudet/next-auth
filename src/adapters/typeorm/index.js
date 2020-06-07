@@ -15,23 +15,33 @@ const Adapter = (config, options = {}) => {
   // @TODO Move this into a function (e.g. lib/parse-database-url)
   if (typeof config === 'string') {
     try {
+      const url = config;
       const parsedUrl = new URL(config)
       config = {}
       config.type = parsedUrl.protocol.replace(/:$/, '')
-      config.host = parsedUrl.hostname
-      config.port = Number(parsedUrl.port)
-      config.username = parsedUrl.username
-      config.password = parsedUrl.password
-      config.database = parsedUrl.pathname.replace(/^\//, '')
+      if(config.type === 'mongodb+srv') {
+        config = {
+          type: 'mongodb',
+          url,
+          database: parsedUrl.pathname.replace(/^\//, ''),
+          useNewUrlParser: true
+        }
+      } else {
+        config.host = parsedUrl.hostname
+        config.port = Number(parsedUrl.port)
+        config.username = parsedUrl.username
+        config.password = parsedUrl.password
+        config.database = parsedUrl.pathname.replace(/^\//, '')
 
-      if (parsedUrl.search) {
-        parsedUrl.search.replace(/^\?/, '').split('&').forEach(keyValuePair => {
-          let [key, value] = keyValuePair.split('=')
-          // Converts true/false strings to actual boolean values
-          if (value === 'true') { value = true }
-          if (value === 'false') { value = false }
-          config[key] = value
-        })
+        if (parsedUrl.search) {
+          parsedUrl.search.replace(/^\?/, '').split('&').forEach(keyValuePair => {
+            let [key, value] = keyValuePair.split('=')
+            // Converts true/false strings to actual boolean values
+            if (value === 'true') { value = true }
+            if (value === 'false') { value = false }
+            config[key] = value
+          })
+        }
       }
     } catch (error) {
       // If URL parsing fails for any reason, try letting TypeORM handle it
@@ -60,7 +70,7 @@ const Adapter = (config, options = {}) => {
 
   // Some custom logic is required to make schemas compatible with MongoDB
   // Here we monkey patch some properties if MongoDB is being used.
-  if (config.type === 'mongodb' || config.type === "mongodb+srv") {
+  if (config.type === 'mongodb') {
     // Important!
     //
     // 1. You must set 'objectId: true' on one property on a model.
@@ -154,13 +164,11 @@ const Adapter = (config, options = {}) => {
     }
 
     let ObjectId // Only defined if the database is MongoDB
-    if (config.type === 'mongodb' | config.type === 'mongodb+srv') {
+    if (config.type === 'mongodb') {
       // MongoDB uses _id (rather than id) for primary keys and TypeORM does not
       // fully abstract this (e.g. the way Mongoose does), so we need to do it.
       // Note: We don't need to change the values in the schemas, just in queries
       // that we make, so it's a variable here.
-      config.type = "mongodb"
-      config.useNewUrlParser = true
       idKey = '_id'
       const mongodb = await import('mongodb')
       ObjectId = mongodb.ObjectId
