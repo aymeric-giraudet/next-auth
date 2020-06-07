@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.default=void 0;var _default=(a,b,c,d)=>{var{providers:e}=c,f={};return Object.entries(e).map((a)=>{var[b,c]=a;f[b]={name:c.name,type:c.type,signinUrl:c.signinUrl,callbackUrl:c.callbackUrl}}),b.setHeader("Content-Type","application/json"),b.json(f),d()};exports.default=_default;

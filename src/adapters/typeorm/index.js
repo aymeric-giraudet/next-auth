@@ -60,7 +60,7 @@ const Adapter = (config, options = {}) => {
 
   // Some custom logic is required to make schemas compatible with MongoDB
   // Here we monkey patch some properties if MongoDB is being used.
-  if (config.type === 'mongodb') {
+  if (config.type === 'mongodb' || config.type === "mongodb+srv") {
     // Important!
     //
     // 1. You must set 'objectId: true' on one property on a model.
@@ -154,7 +154,7 @@ const Adapter = (config, options = {}) => {
     }
 
     let ObjectId // Only defined if the database is MongoDB
-    if (config.type === 'mongodb') {
+    if (config.type === 'mongodb' | config.type === 'mongodb+srv') {
       // MongoDB uses _id (rather than id) for primary keys and TypeORM does not
       // fully abstract this (e.g. the way Mongoose does), so we need to do it.
       // Note: We don't need to change the values in the schemas, just in queries
