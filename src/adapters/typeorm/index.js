@@ -159,6 +159,8 @@ const Adapter = (config, options = {}) => {
       // fully abstract this (e.g. the way Mongoose does), so we need to do it.
       // Note: We don't need to change the values in the schemas, just in queries
       // that we make, so it's a variable here.
+      config.type = "mongodb"
+      config.useNewUrlParser = true
       idKey = '_id'
       const mongodb = await import('mongodb')
       ObjectId = mongodb.ObjectId
